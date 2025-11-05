@@ -3,7 +3,7 @@ from modules import gen_mh,calc_ph
 from ph_fit import ph_fit
 import matplotlib.pyplot as plt
 
-data = np.load('ph_2.01.npy')
+data = np.load('ph_10ghzsamp.npy')
 Hz = data[:,0]
 ph_p = data[:,1]
 

@@ -1,0 +1,45 @@
+//mumax 3.10 [windows_amd64 go1.11.6(gc) CUDA-11.0]
+//GPU info: NVIDIA GeForce RTX 3070 Ti Laptop GPU(8191MB), CUDA Driver 13.0, cc=8.6, using cc=80 PTX
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: fieldloop.out/
+t_fl := 1.5e-9
+SetGridsize(32, 32, 1)
+SetCellsize(2.03125e-9, 2.03125e-9, t_fl)
+Msat_cgs := 1495
+Aex_cgs := 1.6e-6
+Ki_cgs := 2.48
+Msat = Msat_cgs * 1e3
+Aex = Aex_cgs * 1e-5
+anisU = vector(0, 0, 1)
+Ku1 = 0.1 * Ki_cgs / (t_fl * 100)
+print(Ku1)
+//1.653333375e+06
+alpha = 1
+Xi = 1
+m = Uniform(0, 0, -1)
+relax()
+Temp = 300
+ThermSeed(19)
+Hmax := 4200
+Hmin := 3200
+Hstep := 100
+Bmax := (Hmax + 1) / 1e4
+Bmin := Hmin / 1e4
+Bstep := Hstep / 1e4
+TableAdd(B_ext)
+for B := Bmin; B <= Bmax; B += Bstep {
+	B_ext = vector(0, 0, B)
+	run(1e-9)
+	tablesave()
+}
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Leliaert et al., AIP Adv. 7, 125010 (2017).
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).

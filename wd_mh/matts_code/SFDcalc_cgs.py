@@ -31,14 +31,16 @@ thickness = 1.5E-7 # cm
 diam = 65E-7 # cm
 
 # time dependence
-samprate = int(2E3)
+samprate = int(1E9)
 deltat = 1/samprate  # assume time from sampling rate of 1/yyy kHz 
-print(f'deltat = {deltat:.4f}')
+print(f'deltat = {deltat}')
 # H ranges, in T
-Hmin = 1 
-Hmax = 3500
+Hmin = 0 
+Hmax = 4000
 Herr = 5
-fields = np.linspace(Hmin, Hmax, num=samprate)
+Hstep = 10
+N_field = int(Hmax/Hstep)
+fields = np.linspace(Hmin, Hmax, num=N_field)+1
 # number of steps set by sample rate for now
 
 #number of switching trials
@@ -46,7 +48,7 @@ numTrials = 1000
  
 # parameters for energy barrier. Keep them constant for a while
 ## domain wall stuff
-edw = 6.6 # erg/cm^2
+edw = 6.2 # erg/cm^2
 wdw = 12.7E-7  # cm
 ## material stuff
 Ms = 1495 # emu/cm^3
@@ -62,7 +64,7 @@ EbC = EBdwclass.EbclassHCGS(edw,wdw,thickness,diam,Ms)
 #Ebtest = EbC.Eb(200000)
 #print(Ebtest)
 random.seed(666) # set seed for initial diags
-theDist = np.zeros(samprate)
+theDist = np.zeros(N_field)
 switches = 0
 for i in tqdm(range(numTrials)):
     index = 0        
