@@ -9,16 +9,16 @@ plt.style.use(['science','nature'])
 kb = 1.380649e-16 # erg/K
 Temp = 300
 kbT = kb*Temp
-fatt = 1E9
+# fatt = 1E9
 mu0 = 4*np.pi*1E-7
-samprate = int(1E10)
+samprate = int(1E9)
 deltat = 1/samprate 
 D = 65e-7 # cm
 Ms = 1495 # emu/cm^3
-Hk = 1.81e3 # Oe
+# Hk = 1.81e3 # Oe
 t_fl = 1.5e-7 # cm
 
-def ph_func(h,Aex,delta):
+def ph_func(h,Aex,delta,fatt,Hk):
     # edw calculation
     edw = np.sqrt(8*Ms*Hk*Aex)
     # q1 calculation
@@ -51,20 +51,22 @@ def ph_func(h,Aex,delta):
     # fig.savefig('temp.svg')
     return ph
 
-def ph_fit(h,prob,save_fig):
-    popt,pcov = curve_fit(ph_func,h,prob,p0=[1e-6,0.3])
+def ph_fit(h,hfit,prob,save_fig):
+    popt,pcov = curve_fit(ph_func,h,prob,p0=[17.76e-6,0.5,1e9,1.81e3])
     # popt,pcov = curve_fit(ph_func,h,prob,p0=[1e-6,0.3],bounds=(0, [100e-6, 1]))
     Aex = popt[0]
     delta = popt[1]
+    fatt = popt[2]
+    Hk = popt[3]
     wdw = np.abs(D*delta)
     edw = np.sqrt(8*Ms*Hk*Aex)
     Delta = D*t_fl*edw/kbT
     print(popt)
     print(pcov)
-    print(f'Aex = {Aex} | w_dw = {wdw*1e7} nm | Delta = {Delta}')
+    print(f'Aex = {Aex} | w_dw = {wdw*1e7} nm | Delta = {Delta} | fatt = {fatt} | Hk = {Hk}')
     if save_fig:
         fig,ax = plt.subplots(1,1,figsize=(3,2))
         ax.plot(h,prob,'^',color='black',mfc='none')
-        ax.plot(h,ph_func(h,popt[0],popt[1]),color='tab:red')
+        ax.plot(hfit,ph_func(hfit,popt[0],popt[1],popt[2],popt[3]),color='tab:red')
         fig.savefig('fitting.svg')
-    return Aex,wdw,Delta,popt,pcov
+    return Aex,wdw,Delta,fatt,popt,pcov
