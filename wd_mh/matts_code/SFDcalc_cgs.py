@@ -48,7 +48,7 @@ numTrials = 1000
  
 # parameters for energy barrier. Keep them constant for a while
 ## domain wall stuff
-edw = 6.2 # erg/cm^2
+edw = 6.6 # erg/cm^2
 wdw = 12.7E-7  # cm
 ## material stuff
 Ms = 1495 # emu/cm^3
@@ -57,6 +57,8 @@ print(f'Ms = {Ms} emu/cm^3')
 Aexeff = edw*edw/(8*Ms*Hk)
 print(f'Aex = {Aexeff}')
 print(f'wdw = {wdw*1e7} nm')
+Delta = diam*thickness*edw/kbT
+print(f'Delta = {Delta}')
 
 # define Eb dw class. Inputs are in SI
 EbC = EBdwclass.EbclassHCGS(edw,wdw,thickness,diam,Ms)
