@@ -7,8 +7,9 @@ import scienceplots
 plt.style.use(['science','nature'])
 
 #### flags #####
+
 mumax = True
-gen_emcees = True
+gen_emcees = False
 
 #### define constants #####
 
@@ -25,7 +26,7 @@ diam = 65e-7 # cm
 Ms = 1495 # emu/cm^3
 t_fl = 1.5e-7 # cm
 
-#### define residual function #####
+#### define fitting function #####
 
 def ph_fit(h,Hk,fatt,Aex,delta):
 
@@ -69,7 +70,6 @@ def ph_fit(h,Hk,fatt,Aex,delta):
 ph_model = lmfit.Model(ph_fit)
 
 # initialize fitting parameters
-
 params = lmfit.Parameters()
 params.add('Aex',value=1.5E-6,min=1E-6)                   # erg/cm
 params.add('delta',value=0.2,min=0.05)     
@@ -92,8 +92,8 @@ if result.success:
 else:
     print(f'Fit failed')
 
+# generate emcees
 if gen_emcees:
-    # set emcees
     emcee_kws = dict(steps=5000,burn=500,thin=20,is_weighted=False,progress=False)
     emcee_params = result.params.copy()
     emcee_params.add('__lnsigma',value=np.log(0.1),min=np.log(0.001),max=np.log(2.0))
@@ -104,11 +104,13 @@ if gen_emcees:
 hfit = np.linspace(1,np.max(Hz),1000)
 pfit = ph_model.eval(result.params,h=hfit)
 
+# plot fit and data
 fig,ax = plt.subplots(1,1,figsize=(3,2))
 ax.plot(Hz,ph_p,'^',color='black',mfc='none')
 ax.plot(hfit,pfit,color='tab:red')
 fig.savefig('fitting_lmfit.svg')
 
+# plot emcee corner plot
 if gen_emcees:
     plt.figure()
     emcee_corner = corner.corner(result_emcee.flatchain,labels=result_emcee.var_names,
