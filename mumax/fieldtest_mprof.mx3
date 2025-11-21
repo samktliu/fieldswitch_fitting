@@ -1,0 +1,29 @@
+t_fl        := 1.5e-9
+SetGridsize(32, 32, 1)
+SetCellsize(2.03125e-9, 2.03125e-9, t_fl)
+
+Msat_cgs    := 1495 // emu/cm^3
+Aex_cgs     := 1.7757164766533013e-06 // erg/cm
+Ki_cgs      := 2.48 // erg/cm^2
+Msat        = Msat_cgs*1e3
+Aex         = Aex_cgs*1e-5
+anisU       = vector(0, 0, 1)
+Ku1         = 0.1*Ki_cgs/(t_fl*100)
+Temp        = 300
+alpha       = 0.05
+Xi          = 0.1
+print(Ku1)
+
+setgeom(circle(65e-9))
+m           = Uniform(0, 0, -1)
+relax()         // get initial m
+
+Hmax        := 3685 // Oe
+Bmax        := Hmax/1e4
+TableAdd(B_ext)
+B_ext = vector(0, 0, Bmax)
+ThermSeed(0)
+
+autosave(m,1e-10)
+tableautosave(1e-11)
+run(1e-8)
