@@ -11,103 +11,121 @@ import scienceplots
 plt.style.use(['science','nature'])
 
 run_f = False
-copyt_f = False
-convert_f = False
 process_f = True
 plot_f = True
 
 Hfield = 3800 # Oe
+startseed = 0
+endseed = 10
 filtype = 'canny'
 tstep = 1e-10
 
-basedir = f'./dwlen_{Hfield}/'
-mmoutputdir = f'./fieldtest_mprof.out/'
-npoutputdir = f'{basedir}mprof_npy/'
-pngoutputdir = f'{basedir}mprof_png/'
-plotdir = f'{basedir}mprof_plots/'
-dwoutputdir = f'{basedir}mprof_dw/'
-
+fdir = f'./dwlen_{Hfield}/'
 try:
-    os.mkdir(basedir)
-    print(f"Directory '{basedir}' created successfully.")
+    os.mkdir(fdir)
+    print(f"Directory '{fdir}' created successfully.")
 except FileExistsError:
-    print(f"Directory '{basedir}' already exists.")
+    print(f"Directory '{fdir}' already exists.")
 
-try:
-    os.mkdir(npoutputdir)
-    print(f"Directory '{npoutputdir}' created successfully.")
-except FileExistsError:
-    print(f"Directory '{npoutputdir}' already exists.")
+for thermalseed in range(startseed,endseed):
 
-try:
-    os.mkdir(pngoutputdir)
-    print(f"Directory '{pngoutputdir}' created successfully.")
-except FileExistsError:
-    print(f"Directory '{pngoutputdir}' already exists.")
+    basedir = f'{fdir}s{thermalseed}/'
+    mmoutputdir = f'./fieldtest_mprof.out/'
+    npoutputdir = f'{basedir}mprof_npy/'
+    pngoutputdir = f'{basedir}mprof_png/'
+    plotdir = f'{basedir}mprof_plots/'
+    dwoutputdir = f'{basedir}mprof_dw/'
 
-try:
-    os.mkdir(dwoutputdir)
-    print(f"Directory '{dwoutputdir}' created successfully.")
-except FileExistsError:
-    print(f"Directory '{dwoutputdir}' already exists.")
+    if run_f:
 
-try:
-    os.mkdir(plotdir)
-    print(f"Directory '{plotdir}' created successfully.")
-except FileExistsError:
-    print(f"Directory '{plotdir}' already exists.")
+        try:
+            os.mkdir(basedir)
+            print(f"Directory '{basedir}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{basedir}' already exists.")
 
-try:
-    os.mkdir(f'{dwoutputdir}{filtype}/')
-    print(f"Directory '{f'{dwoutputdir}{filtype}/'}' created successfully.")
-except FileExistsError:
-    print(f"Directory '{f'{dwoutputdir}{filtype}/'}' already exists.")
+        try:
+            os.mkdir(npoutputdir)
+            print(f"Directory '{npoutputdir}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{npoutputdir}' already exists.")
 
-if run_f:
-    file = open('fieldtest_mprof.mx3','r')
-    content = file.readlines()
-    content[20] = f'Hmax        := {Hfield} // Oe\n'
-    file = open('fieldtest_mprof.mx3','w')
-    file.writelines(content)
-    file.close()
-    subprocess.run(['mumax3','fieldtest_mprof.mx3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            os.mkdir(pngoutputdir)
+            print(f"Directory '{pngoutputdir}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{pngoutputdir}' already exists.")
 
-if copyt_f:
-    shutil.copyfile(f'{mmoutputdir}table.txt',f'{npoutputdir}mprof_table.txt')
+        try:
+            os.mkdir(dwoutputdir)
+            print(f"Directory '{dwoutputdir}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{dwoutputdir}' already exists.")
 
-if convert_f:
-    subprocess.run(['mumax3-convert','-numpy',mmoutputdir+'*.ovf'])
-    subprocess.run(['mumax3-convert','-png',mmoutputdir+'*.ovf'])
-    for npyfile in tqdm(sorted(glob(mmoutputdir+'*.npy'))):
-        fname = os.path.split(npyfile)[1]
-        shutil.move(npyfile,npoutputdir+fname)
-    for npyfile in tqdm(sorted(glob(mmoutputdir+'*.png'))):
-        fname = os.path.split(npyfile)[1]
-        shutil.move(npyfile,pngoutputdir+fname)
+        try:
+            os.mkdir(plotdir)
+            print(f"Directory '{plotdir}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{plotdir}' already exists.")
 
-if process_f:
-    npy_paths = sorted(glob(npoutputdir+'*.npy'))
-    t_arr = np.arange(0,len(npy_paths)*tstep,tstep)
-    mzavg_arr = []
-    dwl_arr = []
-    for idx,npyfile in enumerate(tqdm(npy_paths)):
-        data_np = np.load(npyfile)
-        mz = data_np[2,0,:,:]
-        mz[mz==0] = np.nan
-        mzavg_arr.append(np.nanmean(mz))
-        dwl,_ = dw_length(mz,dwoutputdir,idx,filtype)
-        dwl_arr.append(dwl)
-    mzavg_arr = np.array(mzavg_arr)
-    dwl_arr = np.array(dwl_arr)
-    print(f'Domain wall length array (nm):\n{dwl_arr*1e9}')
-    np.save(f'{basedir}t_arr',t_arr)
-    np.save(f'{basedir}mzavg_arr',mzavg_arr)
-    np.save(f'{basedir}dwl_arr',dwl_arr)
+        try:
+            os.mkdir(f'{dwoutputdir}{filtype}/')
+            print(f"Directory '{f'{dwoutputdir}{filtype}/'}' created successfully.")
+        except FileExistsError:
+            print(f"Directory '{f'{dwoutputdir}{filtype}/'}' already exists.")
 
-if plot_f:
-    fig,ax = plt.subplots(1,1,figsize=(3,2))
-    fig2,ax2 = plt.subplots(1,1,figsize=(3,2))
-    ax.plot(t_arr*1e9,mzavg_arr)
-    ax2.plot(t_arr*1e9,dwl_arr*1e9)
-    fig.savefig(f'{plotdir}mzavg.svg')
-    fig2.savefig(f'{plotdir}dwl_{filtype}.svg')
+        file = open('fieldtest_mprof.mx3','r')
+        content = file.readlines()
+        content[20] = f'Hmax        := {Hfield} // Oe\n'
+        content[23] = f'ThermSeed({thermalseed})\n'
+        file = open('fieldtest_mprof.mx3','w')
+        file.writelines(content)
+        file.close()
+
+        print(f'Running \'mumax3 fieldtest_mprof.mx3\' seed {thermalseed} ({thermalseed+1}/{endseed})...')
+        subprocess.run(['mumax3','fieldtest_mprof.mx3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        shutil.copyfile(f'{mmoutputdir}table.txt',f'{npoutputdir}mprof_table.txt')
+        subprocess.run(['mumax3-convert','-numpy',mmoutputdir+'*.ovf'])
+        subprocess.run(['mumax3-convert','-png',mmoutputdir+'*.ovf'])
+        
+        print('Moving .npy files...')
+        for npyfile in tqdm(sorted(glob(mmoutputdir+'*.npy'))):
+            fname = os.path.split(npyfile)[1]
+            shutil.move(npyfile,npoutputdir+fname)
+        print('Moving .png files...')
+        for npyfile in tqdm(sorted(glob(mmoutputdir+'*.png'))):
+            fname = os.path.split(npyfile)[1]
+            shutil.move(npyfile,pngoutputdir+fname)
+        for ovffile in glob(mmoutputdir+'*.ovf'):
+            os.remove(ovffile)
+
+    if process_f:
+        npy_paths = sorted(glob(npoutputdir+'*.npy'))
+        t_arr = np.arange(0,len(npy_paths)*tstep,tstep)
+        mzavg_arr = []
+        dwl_arr = []
+        print(f'Processing .ovf files for seed {thermalseed} ({thermalseed+1}/{endseed})...')
+        for idx,npyfile in enumerate(tqdm(npy_paths)):
+            data_np = np.load(npyfile)
+            mz = data_np[2,0,:,:]
+            mz[mz==0] = np.nan
+            mzavg_arr.append(np.nanmean(mz))
+            dwl,_ = dw_length(mz,dwoutputdir,idx,filtype)
+            dwl_arr.append(dwl)
+        mzavg_arr = np.array(mzavg_arr)
+        dwl_arr = np.array(dwl_arr)
+        print(f'Domain wall length array (nm):\n{dwl_arr*1e9}')
+        np.save(f'{basedir}t_arr',t_arr)
+        np.save(f'{basedir}mzavg_arr',mzavg_arr)
+        np.save(f'{basedir}dwl_arr',dwl_arr)
+
+    if plot_f:
+        fig,ax = plt.subplots(1,1,figsize=(3,2))
+        fig2,ax2 = plt.subplots(1,1,figsize=(3,2))
+        ax.plot(t_arr*1e9,mzavg_arr)
+        ax2.plot(t_arr*1e9,dwl_arr*1e9)
+        fig.savefig(f'{plotdir}mzavg.svg')
+        fig2.savefig(f'{plotdir}dwl_{filtype}.svg')
+        plt.close(fig)
+        plt.close(fig2)

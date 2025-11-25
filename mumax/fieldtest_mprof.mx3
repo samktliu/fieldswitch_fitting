@@ -18,12 +18,13 @@ setgeom(circle(65e-9))
 m           = Uniform(0, 0, -1)
 relax()         // get initial m
 
-Hmax        := 3685 // Oe
+Hmax        := 4100 // Oe
 Bmax        := Hmax/1e4
-TableAdd(B_ext)
 B_ext = vector(0, 0, Bmax)
-ThermSeed(0)
+ThermSeed(9)
 
+TableAdd(B_ext)
+TableAdd(E_total)
 autosave(m,1e-10)
 tableautosave(1e-11)
 run(1e-8)

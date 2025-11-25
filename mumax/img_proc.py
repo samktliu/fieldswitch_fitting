@@ -30,4 +30,5 @@ def dw_length(mz_arr,folder,ind=0,filter='canny'):
     if filter == 'sobel':
         magnitude = magnitude/np.nanmax(magnitude)
     dwl = np.nansum(magnitude)*cellsize
+    plt.close()
     return dwl,mz_dwprof
